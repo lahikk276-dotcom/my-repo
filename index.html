@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firearms Encyclopedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pistol:    #e84393;
+    --revolver:  #f97316;
+    --rifle:     #22c55e;
+    --shotgun:   #facc15;
+    --smg:       #38bdf8;
+    --sniper:    #a78bfa;
+    --machine:   #f87171;
+    --assault:   #34d399;
+    --bg: #0a0a0f;
+    --panel: #11111a;
+    --border: rgba(255,255,255,0.08);
+    --text: #e2e8f0;
+    --muted: #64748b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(232,67,147,0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(3.5rem, 12vw, 9rem);
+    letter-spacing: 0.05em;
+    line-height: 0.9;
+    background: linear-gradient(135deg, #fff 30%, #e84393 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+  }
+  .hero p {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--muted);
+    margin-top: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+    z-index: 1;
+  }
+  .scroll-hint svg { width: 20px; height: 20px; }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+
+  /* ── NAV DOTS ── */
+  .nav-dots {
+    position: fixed;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 100;
+  }
+  .nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    padding: 0;
+  }
+  .nav-dot.active {
+    transform: scale(1.5);
+  }
+
+  /* ── SECTIONS ── */
+  .gun-section {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 4rem 5%;
+    gap: 3rem;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+  }
+  .gun-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+
+  /* Accent colors per gun */
+  .s-pistol   { --accent: var(--pistol);  }   .s-pistol::before   { background: radial-gradient(ellipse at 80% 50%, var(--pistol) 0%, transparent 60%); }
+  .s-revolver { --accent: var(--revolver);} .s-revolver::before { background: radial-gradient(ellipse at 20% 50%, var(--revolver) 0%, transparent 60%); }
+  .s-rifle    { --accent: var(--rifle);   }   .s-rifle::before    { background: radial-gradient(ellipse at 80% 50%, var(--rifle) 0%, transparent 60%); }
+  .s-shotgun  { --accent: var(--shotgun); } .s-shotgun::before  { background: radial-gradient(ellipse at 20% 50%, var(--shotgun) 0%, transparent 60%); }
+  .s-smg      { --accent: var(--smg);     }     .s-smg::before      { background: radial-gradient(ellipse at 80% 50%, var(--smg) 0%, transparent 60%); }
+  .s-sniper   { --accent: var(--sniper);  }   .s-sniper::before   { background: radial-gradient(ellipse at 20% 50%, var(--sniper) 0%, transparent 60%); }
+  .s-machine  { --accent: var(--machine); } .s-machine::before  { background: radial-gradient(ellipse at 80% 50%, var(--machine) 0%, transparent 60%); }
+  .s-assault  { --accent: var(--assault); } .s-assault::before  { background: radial-gradient(ellipse at 20% 50%, var(--assault) 0%, transparent 60%); }
+
+  .gun-section:nth-child(even) { direction: rtl; }
+  .gun-section:nth-child(even) > * { direction: ltr; }
+
+  /* ── GUN DISPLAY ── */
+  .gun-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .gun-ring {
+    position: relative;
+    width: clamp(220px, 40vw, 380px);
+    height: clamp(220px, 40vw, 380px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gun-ring::before {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    opacity: 0.4;
+    animation: spin 12s linear infinite;
+  }
+  .gun-ring::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    border: 1px dashed var(--accent);
+    opacity: 0.2;
+    animation: spin 8s linear infinite reverse;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .gun-svg-wrap {
+    position: relative;
+    z-index: 2;
+    transition: transform 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    will-change: transform;
+    filter: drop-shadow(0 0 20px var(--accent));
+  }
+  .gun-svg-wrap svg {
+    width: clamp(140px, 28vw, 280px);
+    height: auto;
+    display: block;
+  }
+
+  .gun-badge {
+    position: absolute;
+    top: 10%;
+    right: 10%;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    z-index: 3;
+  }
+
+  /* ── INFO PANEL ── */
+  .gun-info { position: relative; z-index: 2; }
+  .gun-type {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s 0.1s;
+  }
+  .gun-name {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 0.95;
+    margin-bottom: 1rem;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s 0.2s;
+  }
+  .gun-desc {
+    font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+    line-height: 1.7;
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s 0.3s;
+  }
+  .gun-specs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s 0.4s;
+  }
+  .spec-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 0.6rem 0.8rem;
+    border-radius: 2px;
+  }
+  .spec-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .spec-val {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 2px;
+  }
+
+  .gun-section.visible .gun-type,
+  .gun-section.visible .gun-name,
+  .gun-section.visible .gun-desc,
+  .gun-section.visible .gun-specs {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── STAT BAR ── */
+  .stat-bars {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.6s 0.5s;
+  }
+  .gun-section.visible .stat-bars { opacity: 1; transform: translateY(0); }
+  .stat-row { display: flex; align-items: center; gap: 10px; }
+  .stat-name { font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); width: 70px; text-transform: uppercase; font-family: 'Share Tech Mono', monospace; }
+  .stat-track { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  .stat-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0; transition: width 1.2s cubic-bezier(0.4,0,0.2,1) 0.6s; }
+  .gun-section.visible .stat-fill { width: var(--w); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .gun-section {
+      grid-template-columns: 1fr;
+      padding: 3rem 5%;
+      min-height: auto;
+    }
+    .gun-section:nth-child(even) { direction: ltr; }
+    .gun-display { order: -1; }
+    .gun-ring { width: 200px; height: 200px; margin: 0 auto; }
+    .gun-specs { grid-template-columns: repeat(2, 1fr); }
+    .nav-dots { display: none; }
+  }
+  @media (max-width: 480px) {
+    .gun-specs { grid-template-columns: 1fr; }
+    .gun-ring { width: 160px; height: 160px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- HERO -->
+<section class="hero" id="s0">
+  <div class="hero-grid"></div>
+  <h1>Firearms<br>Encyclopedia</h1>
+  <p>A visual guide to historical &amp; modern firearms</p>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+</section>
+
+<!-- ════════════════════ PISTOL ════════════════════ -->
+<section class="gun-section s-pistol" id="s1" data-index="1">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 01</div>
+      <div class="gun-svg-wrap" data-base="0">
+        <!-- Semi-auto pistol -->
+        <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- slide -->
+          <rect x="10" y="40" width="190" height="45" rx="6" fill="#e84393" opacity="0.9"/>
+          <!-- barrel protrusion -->
+          <rect x="190" y="52" width="60" height="22" rx="4" fill="#c7306d"/>
+          <!-- ejection port -->
+          <rect x="130" y="42" width="40" height="15" rx="2" fill="#9b1f4e"/>
+          <!-- sights -->
+          <rect x="20" y="36" width="8" height="8" rx="1" fill="#ff6bb5"/>
+          <rect x="170" y="36" width="12" height="8" rx="1" fill="#ff6bb5"/>
+          <!-- trigger guard -->
+          <path d="M60 85 Q80 120 120 120 L120 85 Z" fill="#c7306d" stroke="#e84393" stroke-width="1" fill-opacity="0.8"/>
+          <!-- grip -->
+          <rect x="60" y="85" width="60" height="65" rx="5" fill="#9b1f4e"/>
+          <!-- grip texture lines -->
+          <line x1="68" y1="92" x2="68" y2="145" stroke="#e84393" stroke-width="1" opacity="0.4"/>
+          <line x1="78" y1="92" x2="78" y2="145" stroke="#e84393" stroke-width="1" opacity="0.4"/>
+          <line x1="88" y1="92" x2="88" y2="145" stroke="#e84393" stroke-width="1" opacity="0.4"/>
+          <line x1="98" y1="92" x2="98" y2="145" stroke="#e84393" stroke-width="1" opacity="0.4"/>
+          <line x1="108" y1="92" x2="108" y2="145" stroke="#e84393" stroke-width="1" opacity="0.4"/>
+          <!-- magazine release -->
+          <rect x="115" y="90" width="6" height="8" rx="1" fill="#ff6bb5"/>
+          <!-- hammer -->
+          <path d="M50 45 L60 35 L65 45 Z" fill="#ff6bb5"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Semi-Automatic</div>
+    <div class="gun-name">Pistol</div>
+    <div class="gun-desc">The semi-automatic pistol is the world's most widely carried sidearm. Using the energy of each fired cartridge to cycle the action, it automatically loads the next round from a detachable box magazine housed in the grip. Compact, reliable, and fast to reload — it dominates military, law enforcement, and civilian markets globally.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">9mm, .45 ACP</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">7–20+ rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">~50 m</div></div>
+      <div class="spec-item"><div class="spec-label">Action</div><div class="spec-val">Semi-auto</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:45%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:30%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Conceal</span><div class="stat-track"><div class="stat-fill" style="--w:90%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Fire rate</span><div class="stat-track"><div class="stat-fill" style="--w:60%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ REVOLVER ════════════════════ -->
+<section class="gun-section s-revolver" id="s2" data-index="2">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 02</div>
+      <div class="gun-svg-wrap" data-base="15">
+        <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+          <!-- barrel -->
+          <rect x="80" y="52" width="170" height="22" rx="5" fill="#f97316"/>
+          <!-- frame -->
+          <path d="M80 52 L80 85 Q100 130 130 130 L145 130 L145 85 L80 85 Z" fill="#c2530d"/>
+          <!-- cylinder -->
+          <circle cx="70" cy="72" r="38" fill="#ea6a0e" stroke="#f97316" stroke-width="2"/>
+          <!-- cylinder chambers (6) -->
+          <circle cx="70" cy="72" r="10" fill="#7c3410"/>
+          <circle cx="70" cy="44" r="9" fill="#7c3410" stroke="#f97316" stroke-width="1"/>
+          <circle cx="94" cy="58" r="9" fill="#7c3410" stroke="#f97316" stroke-width="1"/>
+          <circle cx="94" cy="86" r="9" fill="#7c3410" stroke="#f97316" stroke-width="1"/>
+          <circle cx="70" cy="100" r="9" fill="#7c3410" stroke="#f97316" stroke-width="1"/>
+          <circle cx="46" cy="86" r="9" fill="#7c3410" stroke="#f97316" stroke-width="1"/>
+          <circle cx="46" cy="58" r="9" fill="#7c3410" stroke="#f97316" stroke-width="1"/>
+          <!-- trigger guard -->
+          <path d="M120 85 Q140 115 160 115 L160 85 Z" fill="#c2530d"/>
+          <!-- grip -->
+          <rect x="120" y="85" width="42" height="55" rx="5" fill="#7c3410"/>
+          <!-- grip lines -->
+          <line x1="127" y1="92" x2="127" y2="135" stroke="#f97316" stroke-width="1" opacity="0.4"/>
+          <line x1="136" y1="92" x2="136" y2="135" stroke="#f97316" stroke-width="1" opacity="0.4"/>
+          <line x1="145" y1="92" x2="145" y2="135" stroke="#f97316" stroke-width="1" opacity="0.4"/>
+          <!-- hammer -->
+          <path d="M112 52 L125 40 L130 52 Z" fill="#fba84a"/>
+          <!-- muzzle crown -->
+          <circle cx="250" cy="63" r="8" fill="#7c3410" stroke="#f97316" stroke-width="1.5"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Revolver</div>
+    <div class="gun-name">Revolver</div>
+    <div class="gun-desc">The revolver uses a rotating cylinder holding multiple individual chambers, each loaded with a cartridge. As the trigger is pulled (double-action) or hammer cocked (single-action), the cylinder rotates to align the next round with the barrel. Renowned for mechanical simplicity and reliability even after decades of neglect, revolvers remain trusted by hunters, outdoorspeople, and collectors worldwide.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">.38, .357, .44</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">5–8 rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">~50 m</div></div>
+      <div class="spec-item"><div class="spec-label">Action</div><div class="spec-val">SA / DA</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:65%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:35%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Conceal</span><div class="stat-track"><div class="stat-fill" style="--w:70%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Reliability</span><div class="stat-track"><div class="stat-fill" style="--w:95%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ RIFLE ════════════════════ -->
+<section class="gun-section s-rifle" id="s3" data-index="3">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 03</div>
+      <div class="gun-svg-wrap" data-base="-10">
+        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- stock -->
+          <path d="M0 48 L0 75 Q20 80 40 72 L40 48 Z" fill="#14532d" rx="3"/>
+          <!-- receiver body -->
+          <rect x="38" y="44" width="100" height="32" rx="4" fill="#22c55e"/>
+          <!-- barrel -->
+          <rect x="136" y="50" width="150" height="18" rx="4" fill="#16a34a"/>
+          <!-- muzzle -->
+          <rect x="282" y="47" width="12" height="24" rx="3" fill="#166534"/>
+          <!-- charging handle -->
+          <rect x="100" y="40" width="14" height="8" rx="2" fill="#4ade80"/>
+          <!-- scope rail -->
+          <rect x="50" y="40" width="80" height="5" rx="2" fill="#166534"/>
+          <!-- pistol grip -->
+          <path d="M85 76 Q90 110 110 115 L120 115 L120 76 Z" fill="#166534"/>
+          <!-- trigger guard -->
+          <path d="M110 76 Q125 105 140 105 L140 76 Z" fill="#166534"/>
+          <!-- magazine -->
+          <path d="M100 76 L100 110 Q110 118 120 110 L120 76 Z" fill="#15803d"/>
+          <!-- handguard -->
+          <rect x="138" y="48" width="60" height="22" rx="3" fill="#166534"/>
+          <!-- handguard vents -->
+          <rect x="145" y="52" width="5" height="14" rx="1" fill="#14532d"/>
+          <rect x="155" y="52" width="5" height="14" rx="1" fill="#14532d"/>
+          <rect x="165" y="52" width="5" height="14" rx="1" fill="#14532d"/>
+          <rect x="175" y="52" width="5" height="14" rx="1" fill="#14532d"/>
+          <rect x="185" y="52" width="5" height="14" rx="1" fill="#14532d"/>
+          <!-- front sight -->
+          <rect x="268" y="43" width="5" height="10" rx="1" fill="#4ade80"/>
+          <!-- rear sight -->
+          <rect x="58" y="36" width="8" height="8" rx="1" fill="#4ade80"/>
+          <!-- butt pad -->
+          <rect x="0" y="48" width="6" height="27" rx="2" fill="#166534"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Long Gun</div>
+    <div class="gun-name">Bolt-Action<br>Rifle</div>
+    <div class="gun-desc">Bolt-action rifles require the shooter to manually cycle the bolt between shots, locking the cartridge into the chamber. This deliberate process rewards accuracy — bolt guns are the benchmark for precision at distance. From big-game hunters in the Rockies to Olympic target shooters, the bolt-action's marriage of mechanical simplicity and inherent accuracy makes it an enduring classic.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">.308, 6.5 CM</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">4–10 rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">600–900 m</div></div>
+      <div class="spec-item"><div class="spec-label">Action</div><div class="spec-val">Bolt-action</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:80%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:85%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Accuracy</span><div class="stat-track"><div class="stat-fill" style="--w:92%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Fire rate</span><div class="stat-track"><div class="stat-fill" style="--w:20%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ SHOTGUN ════════════════════ -->
+<section class="gun-section s-shotgun" id="s4" data-index="4">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 04</div>
+      <div class="gun-svg-wrap" data-base="8">
+        <svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+          <!-- stock -->
+          <path d="M0 50 L0 82 Q25 88 45 78 L45 50 Z" fill="#78350f"/>
+          <!-- receiver -->
+          <rect x="43" y="46" width="85" height="36" rx="5" fill="#facc15"/>
+          <!-- magazine tube under barrel -->
+          <rect x="126" y="74" width="155" height="14" rx="5" fill="#ca8a04"/>
+          <!-- barrel -->
+          <rect x="126" y="50" width="155" height="24" rx="5" fill="#eab308"/>
+          <!-- muzzle -->
+          <ellipse cx="281" cy="62" rx="8" ry="14" fill="#78350f" stroke="#facc15" stroke-width="1.5"/>
+          <!-- action bars -->
+          <rect x="100" y="50" width="18" height="36" rx="3" fill="#a16207"/>
+          <!-- trigger guard -->
+          <path d="M95 82 Q112 112 132 112 L132 82 Z" fill="#a16207"/>
+          <!-- pistol grip / standard stock connection -->
+          <path d="M55 82 Q65 112 85 116 L95 116 L95 82 Z" fill="#78350f"/>
+          <!-- fore-end (pump grip) -->
+          <rect x="175" y="73" width="50" height="17" rx="4" fill="#a16207"/>
+          <!-- fore-end lines -->
+          <line x1="182" y1="75" x2="182" y2="88" stroke="#facc15" stroke-width="1" opacity="0.5"/>
+          <line x1="190" y1="75" x2="190" y2="88" stroke="#facc15" stroke-width="1" opacity="0.5"/>
+          <line x1="198" y1="75" x2="198" y2="88" stroke="#facc15" stroke-width="1" opacity="0.5"/>
+          <line x1="206" y1="75" x2="206" y2="88" stroke="#facc15" stroke-width="1" opacity="0.5"/>
+          <line x1="214" y1="75" x2="214" y2="88" stroke="#facc15" stroke-width="1" opacity="0.5"/>
+          <!-- safety button -->
+          <circle cx="110" cy="48" r="5" fill="#fde047"/>
+          <!-- rear sight notch -->
+          <rect x="50" y="43" width="12" height="6" rx="1" fill="#fde047"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Smoothbore</div>
+    <div class="gun-name">Pump-Action<br>Shotgun</div>
+    <div class="gun-desc">The pump-action shotgun cycles by sliding the fore-end rearward and forward, ejecting spent shells and chambering fresh ones. Firing shells loaded with multiple projectiles (buckshot), single slugs, or specialty rounds, the shotgun delivers devastating stopping power at close range. It dominates home defense, sport clay shooting, and upland bird hunting alike — few firearms are as versatile at short range.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Gauge</div><div class="spec-val">12, 20, .410</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">4–8 shells</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">~50 m</div></div>
+      <div class="spec-item"><div class="spec-label">Action</div><div class="spec-val">Pump-action</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:88%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:28%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Spread</span><div class="stat-track"><div class="stat-fill" style="--w:92%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Fire rate</span><div class="stat-track"><div class="stat-fill" style="--w:35%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ SMG ════════════════════ -->
+<section class="gun-section s-smg" id="s5" data-index="5">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 05</div>
+      <div class="gun-svg-wrap" data-base="-5">
+        <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">
+          <!-- stock (folded/wire style) -->
+          <path d="M0 55 Q10 45 25 50 L25 75 Q10 80 0 70 Z" fill="#0369a1"/>
+          <!-- receiver -->
+          <rect x="23" y="47" width="100" height="36" rx="4" fill="#38bdf8"/>
+          <!-- barrel shroud -->
+          <rect x="121" y="51" width="110" height="26" rx="4" fill="#0284c7"/>
+          <!-- muzzle compensator -->
+          <rect x="228" y="48" width="20" height="32" rx="3" fill="#075985"/>
+          <line x1="233" y1="50" x2="233" y2="78" stroke="#38bdf8" stroke-width="2"/>
+          <line x1="240" y1="50" x2="240" y2="78" stroke="#38bdf8" stroke-width="2"/>
+          <!-- charging handle -->
+          <rect x="70" y="43" width="12" height="6" rx="2" fill="#7dd3fc"/>
+          <!-- pistol grip -->
+          <path d="M75 83 Q80 115 98 118 L108 118 L108 83 Z" fill="#075985"/>
+          <!-- trigger guard -->
+          <path d="M108 83 Q120 108 135 108 L135 83 Z" fill="#075985"/>
+          <!-- mag well (box mag) -->
+          <rect x="80" y="83" width="28" height="36" rx="3" fill="#0284c7"/>
+          <!-- mag lines -->
+          <line x1="87" y1="90" x2="87" y2="115" stroke="#38bdf8" stroke-width="1" opacity="0.4"/>
+          <line x1="95" y1="90" x2="95" y2="115" stroke="#38bdf8" stroke-width="1" opacity="0.4"/>
+          <!-- sights -->
+          <rect x="30" y="43" width="8" height="6" rx="1" fill="#7dd3fc"/>
+          <rect x="135" y="43" width="8" height="6" rx="1" fill="#7dd3fc"/>
+          <!-- barrel holes -->
+          <circle cx="140" cy="64" r="4" fill="#075985"/>
+          <circle cx="155" cy="64" r="4" fill="#075985"/>
+          <circle cx="170" cy="64" r="4" fill="#075985"/>
+          <circle cx="185" cy="64" r="4" fill="#075985"/>
+          <circle cx="200" cy="64" r="4" fill="#075985"/>
+          <circle cx="215" cy="64" r="4" fill="#075985"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Automatic</div>
+    <div class="gun-name">Sub-Machine<br>Gun</div>
+    <div class="gun-desc">The submachine gun bridges pistol and rifle — firing pistol-caliber cartridges from a compact, fully-automatic platform. Designed for close-quarters combat, SMGs provide controllable automatic fire without the size and weight of a rifle. They dominate VIP protection, police tactical units, and military special operations where hallways and vehicles dictate compact firepower. The MP5, UMP, and MAC-10 are legendary examples.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">9mm, .45 ACP</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">20–50 rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">~150 m</div></div>
+      <div class="spec-item"><div class="spec-label">Fire rate</div><div class="spec-val">600–1200 rpm</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:40%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:35%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Fire rate</span><div class="stat-track"><div class="stat-fill" style="--w:88%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Conceal</span><div class="stat-track"><div class="stat-fill" style="--w:75%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ SNIPER RIFLE ════════════════════ -->
+<section class="gun-section s-sniper" id="s6" data-index="6">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 06</div>
+      <div class="gun-svg-wrap" data-base="-12">
+        <svg viewBox="0 0 310 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- adjustable stock -->
+          <rect x="0" y="50" width="15" height="28" rx="3" fill="#4c1d95"/>
+          <rect x="12" y="55" width="30" height="18" rx="2" fill="#5b21b6"/>
+          <!-- chassis -->
+          <rect x="40" y="46" width="100" height="36" rx="4" fill="#7c3aed"/>
+          <!-- scope mount rail -->
+          <rect x="50" y="40" width="85" height="6" rx="2" fill="#5b21b6"/>
+          <!-- scope body -->
+          <rect x="55" y="28" width="75" height="14" rx="5" fill="#4c1d95"/>
+          <circle cx="55" cy="35" r="7" fill="#6d28d9" stroke="#a78bfa" stroke-width="1.5"/>
+          <circle cx="130" cy="35" r="9" fill="#6d28d9" stroke="#a78bfa" stroke-width="1.5"/>
+          <!-- scope adjustment turrets -->
+          <rect x="88" y="24" width="8" height="6" rx="2" fill="#a78bfa"/>
+          <!-- barrel (heavy profile) -->
+          <rect x="138" y="50" width="162" height="22" rx="4" fill="#6d28d9"/>
+          <!-- suppressor -->
+          <rect x="292" y="44" width="14" height="34" rx="5" fill="#4c1d95"/>
+          <line x1="294" y1="50" x2="294" y2="76" stroke="#a78bfa" stroke-width="1.5"/>
+          <line x1="300" y1="50" x2="300" y2="76" stroke="#a78bfa" stroke-width="1.5"/>
+          <line x1="302" y1="50" x2="302" y2="76" stroke="#a78bfa" stroke-width="1.5"/>
+          <!-- bolt knob -->
+          <circle cx="110" cy="44" r="7" fill="#a78bfa"/>
+          <line x1="110" y1="44" x2="120" y2="38" stroke="#a78bfa" stroke-width="2"/>
+          <!-- trigger guard -->
+          <path d="M100 82 Q115 110 135 110 L135 82 Z" fill="#5b21b6"/>
+          <!-- grip -->
+          <path d="M88 82 Q93 112 108 116 L118 116 L118 82 Z" fill="#4c1d95"/>
+          <!-- box magazine -->
+          <rect x="95" y="82" width="22" height="28" rx="3" fill="#6d28d9"/>
+          <!-- bipod legs -->
+          <line x1="165" y1="72" x2="155" y2="108" stroke="#a78bfa" stroke-width="3"/>
+          <line x1="175" y1="72" x2="185" y2="108" stroke="#a78bfa" stroke-width="3"/>
+          <rect x="150" y="104" width="10" height="6" rx="2" fill="#7c3aed"/>
+          <rect x="180" y="104" width="10" height="6" rx="2" fill="#7c3aed"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Precision Long-Range</div>
+    <div class="gun-name">Sniper<br>Rifle</div>
+    <div class="gun-desc">A precision rifle system purpose-built for extreme-range accuracy, the sniper rifle pairs a heavy, free-floated barrel with a high-magnification scope, bipod, and chassis that eliminates flex. Military configurations often include suppressors. Snipers engage targets from 500 m to over 2,000 m, making this the longest arm of infantry combat. Patience, wind reading, and trigger discipline matter as much as the hardware.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">.308, .338 LM</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">5–10 rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">800–2000+ m</div></div>
+      <div class="spec-item"><div class="spec-label">Action</div><div class="spec-val">Bolt / Semi</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:90%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:99%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Accuracy</span><div class="stat-track"><div class="stat-fill" style="--w:98%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Fire rate</span><div class="stat-track"><div class="stat-fill" style="--w:12%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ MACHINE GUN ════════════════════ -->
+<section class="gun-section s-machine" id="s7" data-index="7">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 07</div>
+      <div class="gun-svg-wrap" data-base="6">
+        <svg viewBox="0 0 310 130" xmlns="http://www.w3.org/2000/svg">
+          <!-- stock -->
+          <rect x="0" y="52" width="40" height="28" rx="4" fill="#7f1d1d"/>
+          <!-- receiver -->
+          <rect x="38" y="46" width="110" height="38" rx="5" fill="#ef4444"/>
+          <!-- barrel (long & heavy) -->
+          <rect x="146" y="52" width="154" height="22" rx="4" fill="#dc2626"/>
+          <!-- flash hider -->
+          <rect x="296" y="48" width="10" height="30" rx="3" fill="#7f1d1d"/>
+          <line x1="299" y1="52" x2="299" y2="76" stroke="#f87171" stroke-width="2"/>
+          <line x1="303" y1="52" x2="303" y2="76" stroke="#f87171" stroke-width="2"/>
+          <!-- carrying handle -->
+          <path d="M80 46 Q100 22 130 46" fill="none" stroke="#f87171" stroke-width="5" stroke-linecap="round"/>
+          <!-- feed tray / belt box -->
+          <rect x="75" y="84" width="45" height="36" rx="4" fill="#b91c1c"/>
+          <!-- ammo belt hanging -->
+          <path d="M88 120 Q95 135 100 128 Q105 121 110 134 Q115 145 118 138" fill="none" stroke="#f87171" stroke-width="3" stroke-linecap="round"/>
+          <!-- trigger group -->
+          <path d="M105 84 Q118 108 138 108 L138 84 Z" fill="#b91c1c"/>
+          <!-- front grip / pistol grip -->
+          <path d="M95 84 Q100 115 115 118 L125 118 L125 84 Z" fill="#7f1d1d"/>
+          <!-- bipod -->
+          <line x1="175" y1="74" x2="162" y2="112" stroke="#f87171" stroke-width="4"/>
+          <line x1="185" y1="74" x2="198" y2="112" stroke="#f87171" stroke-width="4"/>
+          <rect x="157" y="108" width="12" height="7" rx="3" fill="#dc2626"/>
+          <rect x="193" y="108" width="12" height="7" rx="3" fill="#dc2626"/>
+          <!-- sights -->
+          <rect x="48" y="42" width="10" height="7" rx="2" fill="#fca5a5"/>
+          <rect x="148" y="42" width="10" height="7" rx="2" fill="#fca5a5"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Support Weapon</div>
+    <div class="gun-name">Light Machine<br>Gun</div>
+    <div class="gun-desc">The light machine gun (LMG) provides sustained automatic fire to support infantry assault and defense. Fed by belted ammunition or large-capacity drum magazines, it can fire hundreds of rounds before overheating — unlike assault rifles. The bipod allows stable prone firing, while the heavy barrel manages heat. LMGs like the M249 SAW and RPK are the backbone of squad-level firepower, providing suppressive fire so teammates can maneuver.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">5.56, 7.62 mm</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">100–200 rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">800–1000 m</div></div>
+      <div class="spec-item"><div class="spec-label">Fire rate</div><div class="spec-val">700–950 rpm</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:80%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:75%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Suppress</span><div class="stat-track"><div class="stat-fill" style="--w:99%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Mobility</span><div class="stat-track"><div class="stat-fill" style="--w:30%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════ ASSAULT RIFLE ════════════════════ -->
+<section class="gun-section s-assault" id="s8" data-index="8">
+  <div class="gun-display">
+    <div class="gun-ring">
+      <div class="gun-badge">TYPE 08</div>
+      <div class="gun-svg-wrap" data-base="-8">
+        <svg viewBox="0 0 290 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- collapsible stock -->
+          <rect x="0" y="50" width="12" height="26" rx="3" fill="#064e3b"/>
+          <rect x="10" y="54" width="28" height="18" rx="2" fill="#065f46"/>
+          <!-- receiver upper -->
+          <rect x="36" y="43" width="105" height="20" rx="3" fill="#34d399"/>
+          <!-- receiver lower -->
+          <rect x="36" y="63" width="105" height="20" rx="3" fill="#059669"/>
+          <!-- charging handle -->
+          <rect x="112" y="39" width="14" height="6" rx="2" fill="#6ee7b7"/>
+          <!-- picatinny rail top -->
+          <rect x="40" y="39" width="70" height="5" rx="1" fill="#064e3b"/>
+          <rect x="45" y="39" width="4" height="5" fill="#34d399"/>
+          <rect x="53" y="39" width="4" height="5" fill="#34d399"/>
+          <rect x="61" y="39" width="4" height="5" fill="#34d399"/>
+          <rect x="69" y="39" width="4" height="5" fill="#34d399"/>
+          <rect x="77" y="39" width="4" height="5" fill="#34d399"/>
+          <rect x="85" y="39" width="4" height="5" fill="#34d399"/>
+          <!-- handguard (M-LOK style) -->
+          <rect x="140" y="47" width="70" height="32" rx="3" fill="#065f46"/>
+          <!-- M-LOK slots -->
+          <rect x="148" y="52" width="6" height="12" rx="1" fill="#064e3b"/>
+          <rect x="160" y="52" width="6" height="12" rx="1" fill="#064e3b"/>
+          <rect x="172" y="52" width="6" height="12" rx="1" fill="#064e3b"/>
+          <rect x="184" y="52" width="6" height="12" rx="1" fill="#064e3b"/>
+          <rect x="196" y="52" width="6" height="12" rx="1" fill="#064e3b"/>
+          <!-- barrel -->
+          <rect x="208" y="51" width="72" height="16" rx="4" fill="#059669"/>
+          <!-- muzzle brake -->
+          <rect x="278" y="47" width="10" height="24" rx="3" fill="#064e3b"/>
+          <line x1="281" y1="51" x2="281" y2="69" stroke="#34d399" stroke-width="2"/>
+          <line x1="285" y1="51" x2="285" y2="69" stroke="#34d399" stroke-width="2"/>
+          <!-- pistol grip -->
+          <path d="M80 83 Q85 113 102 116 L112 116 L112 83 Z" fill="#064e3b"/>
+          <!-- trigger guard -->
+          <path d="M112 83 Q126 108 145 108 L145 83 Z" fill="#064e3b"/>
+          <!-- magazine (curved STANAG) -->
+          <path d="M90 83 Q88 118 98 120 Q108 122 108 118 L110 83 Z" fill="#059669"/>
+          <!-- angled foregrip -->
+          <rect x="170" y="79" width="15" height="22" rx="3" fill="#065f46" transform="rotate(-15 170 79)"/>
+          <!-- rear sight -->
+          <rect x="42" y="35" width="10" height="7" rx="2" fill="#6ee7b7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="gun-info">
+    <div class="gun-type">Selective Fire</div>
+    <div class="gun-name">Assault<br>Rifle</div>
+    <div class="gun-desc">The assault rifle is the defining infantry weapon of the modern era — offering selective fire between semi-automatic and fully automatic modes, chambered in an intermediate cartridge that balances power with control. The AK-47, M16, and SCAR are icons of this category. Modular designs allow rapid attachment of optics, suppressors, and foregrips. Since 1944, the assault rifle has been the decisive weapon of ground combat worldwide.</div>
+    <div class="gun-specs">
+      <div class="spec-item"><div class="spec-label">Calibers</div><div class="spec-val">5.56, 7.62×39</div></div>
+      <div class="spec-item"><div class="spec-label">Capacity</div><div class="spec-val">20–40 rounds</div></div>
+      <div class="spec-item"><div class="spec-label">Effective range</div><div class="spec-val">400–600 m</div></div>
+      <div class="spec-item"><div class="spec-label">Fire rate</div><div class="spec-val">600–900 rpm</div></div>
+    </div>
+    <div class="stat-bars">
+      <div class="stat-row"><span class="stat-name">Power</span><div class="stat-track"><div class="stat-fill" style="--w:70%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Range</span><div class="stat-track"><div class="stat-fill" style="--w:72%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Versatility</span><div class="stat-track"><div class="stat-fill" style="--w:95%"></div></div></div>
+      <div class="stat-row"><span class="stat-name">Fire rate</span><div class="stat-track"><div class="stat-fill" style="--w:82%"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2026 &nbsp;·&nbsp; Firearms Encyclopedia &nbsp;·&nbsp; Educational Reference Only
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('.gun-section');
+  const navDots = document.getElementById('navDots');
+  const gunColors = ['#e84393','#f97316','#22c55e','#facc15','#38bdf8','#a78bfa','#f87171','#34d399'];
+
+  // Build nav dots
+  const allSections = [document.getElementById('s0'), ...sections];
+  allSections.forEach((s, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot';
+    dot.setAttribute('aria-label', 'Go to section ' + i);
+    if (i > 0) dot.style.background = gunColors[i - 1];
+    dot.addEventListener('click', () => s.scrollIntoView({ behavior: 'smooth' }));
+    navDots.appendChild(dot);
+  });
+
+  const dots = navDots.querySelectorAll('.nav-dot');
+
+  // Scroll rotation — each gun SVG rotates as you scroll through its section
+  function onScroll() {
+    const scrollY = window.scrollY;
+    const wh = window.innerHeight;
+
+    // Update active dot
+    let activeIdx = 0;
+    allSections.forEach((s, i) => {
+      const rect = s.getBoundingClientRect();
+      if (rect.top < wh * 0.5) activeIdx = i;
+    });
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === activeIdx);
+    });
+
+    // Animate sections in + rotate guns
+    sections.forEach((sec) => {
+      const rect = sec.getBoundingClientRect();
+      const inView = rect.top < wh * 0.85 && rect.bottom > 0;
+      sec.classList.toggle('visible', inView);
+
+      // Rotation based on scroll progress through the section
+      const wrap = sec.querySelector('.gun-svg-wrap');
+      if (!wrap) return;
+      const base = parseFloat(wrap.dataset.base) || 0;
+      if (inView) {
+        const progress = 1 - rect.top / wh;
+        const angle = base + (progress - 0.5) * 60;
+        wrap.style.transform = `rotateY(${angle}deg) rotate(${base}deg)`;
+      }
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Trigger stat bars after fonts load
+  window.addEventListener('load', onScroll);
+</script>
+</body>
+</html>
